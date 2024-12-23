@@ -208,7 +208,7 @@ Future improvements can include SIMD (Single Instruction, Multiple Data) optimiz
 
 ## Demo
 Watch this demo video to see the application in action:
-[![Watch the demo video](https://drive.google.com/file/d/1lWU18tc5gnd-PdGpojw97UxSLDSNmBfq/view?usp=sharing)
+[![Watch the demo video](https://img.youtube.com/vi/yourVideoID/0.jpg)](https://www.youtube.com/watch?v=yourVideoID)
 
 
 
