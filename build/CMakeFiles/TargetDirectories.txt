@@ -1,0 +1,3 @@
+C:/Users/jonel/OneDrive/Desktop/C++Projects/C++Visual Studio/WebSocket/WebSocket_HFT/build/CMakeFiles/deribit_trader.dir
+C:/Users/jonel/OneDrive/Desktop/C++Projects/C++Visual Studio/WebSocket/WebSocket_HFT/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/jonel/OneDrive/Desktop/C++Projects/C++Visual Studio/WebSocket/WebSocket_HFT/build/CMakeFiles/ZERO_CHECK.dir
