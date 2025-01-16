@@ -10,6 +10,7 @@ set(BOOST_ROOT "C:/boost_1_87_0")
 # Find required packages
 find_package(Boost REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 # Add the executable and source files
 add_executable(deribit_trader
@@ -22,12 +23,8 @@ add_executable(deribit_trader
 # Specify the directory for the executable to be placed
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# Include Boost in your project
-target_include_directories(deribit_trader PRIVATE ${Boost_INCLUDE_DIRS})
+# Include Boost and nlohmann_json in your project
+target_include_directories(deribit_trader PRIVATE ${Boost_INCLUDE_DIRS} ${nlohmann_json_INCLUDE_DIRS})
 
-# Link Boost and OpenSSL libraries
-target_link_libraries(deribit_trader PRIVATE ${Boost_LIBRARIES} OpenSSL::SSL)
-
-
-
-
+# Link Boost, OpenSSL, and nlohmann_json libraries
+target_link_libraries(deribit_trader PRIVATE ${Boost_LIBRARIES} OpenSSL::SSL nlohmann_json::nlohmann_json)
