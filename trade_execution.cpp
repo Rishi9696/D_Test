@@ -191,3 +191,11 @@ json TradeExecution::getPositions() {
 void TradeExecution::addMarketDataSubscriber(const std::string& symbol, std::function<void(const json&)> callback) {
     market_data_subscribers_[symbol] = callback;
 }
+
+void TradeExecution::subscribeToMarketData(const std::string& symbol) {
+    websocket_.subscribe(symbol);
+    websocket_.setMarketDataCallback([this](const std::string& symbol, const json& data) {
+        std::cout << "Market data update for symbol: " << symbol << std::endl; // Log market data updates
+        handleMarketData(data);
+    });
+}

@@ -33,6 +33,7 @@ public:
 
     // Subscriber Management
     void addMarketDataSubscriber(const std::string& symbol, std::function<void(const json&)> callback);
+    void subscribeToMarketData(const std::string& symbol);
 
 private:
    WebSocketHandler& websocket_;

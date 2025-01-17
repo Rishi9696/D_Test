@@ -45,14 +45,15 @@ void executeTrades() {
             std::cout << "3. Modify Order\n";
             std::cout << "4. Get Order Book\n";
             std::cout << "5. View Current Positions\n";
-            std::cout << "6. Exit\n";
+            std::cout << "6. Subscribe to Market Data\n";
+            std::cout << "7. Exit\n";
             std::cout << "Enter your choice: ";
             int choice;
             std::cin >> choice;
             
             auto loop_start = LatencyModule::start();  // Start the timer for end-to-end latency
             
-            if (choice == 6) {
+            if (choice == 7) {
                 std::cout << "Exiting trading application.\n";
                 break;
             }
@@ -162,6 +163,25 @@ void executeTrades() {
                 }
                 catch (const std::exception& e) {
                     std::cerr << "Error fetching positions: " << e.what() << std::endl;
+                }
+                break;
+            }
+
+            case 6: {  // Subscribe to Market Data
+                std::cout << "Enter instrument name to subscribe (e.g., BTC-PERPETUAL): ";
+                std::cin >> instrument_name;
+
+                try {
+                    trade->subscribeToMarketData(instrument_name);
+                    std::cout << "Subscribed to symbol: " << instrument_name << std::endl;
+
+                    // Continuously read and process incoming messages
+                    while (true) {
+                        websocket.readMessage();
+                    }
+                }
+                catch (const std::exception& e) {
+                    std::cerr << "Error subscribing to market data: " << e.what() << std::endl;
                 }
                 break;
             }

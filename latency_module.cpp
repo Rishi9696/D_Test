@@ -1,5 +1,6 @@
 #include "latency_module.h"
 #include <iostream>
+#include <chrono>
 
 std::chrono::high_resolution_clock::time_point LatencyModule::start() {
     return std::chrono::high_resolution_clock::now();

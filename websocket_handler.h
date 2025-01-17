@@ -11,6 +11,7 @@
 #include <boost/beast/ssl.hpp>
 #include <boost/beast/core.hpp>
 #include <string>
+#include <functional>
 #include "trade_execution.h"  // Include the TradeExecution header for access
 
 namespace beast = boost::beast;
@@ -25,9 +26,11 @@ public:
     WebSocketHandler(const std::string& host, const std::string& port, const std::string& endpoint );
 
     void connect();
+    void subscribe(const std::string& symbol); // Declare the subscribe function
     void onMessage(const std::string& message); // Declare the onMessage function
     void sendMessage(const json& message);
     json readMessage();
+    void setMarketDataCallback(std::function<void(const std::string&, const json&)> callback); // Declare the setMarketDataCallback function
     void close();
 
 private:
@@ -37,6 +40,7 @@ private:
     beast::websocket::stream<ssl::stream<tcp::socket>> websocket_;
     std::string host_;
     std::string endpoint_;
+    std::function<void(const std::string&, const json&)> market_data_callback_; // Add market_data_callback_ member
     // TradeExecution& trade_execution_;  // Reference to TradeExecution object
 };
 

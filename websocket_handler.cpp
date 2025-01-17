@@ -8,7 +8,6 @@ WebSocketHandler::WebSocketHandler(const std::string& host, const std::string& p
     websocket_(ioc_, ctx_),
     host_(host),
     endpoint_(endpoint) {
-    //trade_execution_(trade_execution) {  // Initialize the TradeExecution reference
     // Load the default SSL certificates
     ctx_.set_default_verify_paths();
 }
@@ -34,11 +33,38 @@ void WebSocketHandler::connect() {
     }
 }
 
+void WebSocketHandler::subscribe(const std::string& symbol) {
+    try {
+        json subscribe_message = {
+            {"jsonrpc", "2.0"},
+            {"id", 1},
+            {"method", "public/subscribe"},
+            {"params", {{"channels", {"book." + symbol + ".100ms"}}}}
+        };
+        sendMessage(subscribe_message);
+        std::cout << "Subscribed to symbol: " << symbol << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error subscribing to symbol: " << e.what() << std::endl;
+    }
+}
+
 void WebSocketHandler::onMessage(const std::string& message) {
+    std::cout << "Received message: " << message << std::endl; // Log incoming messages
+
     // Parse the incoming message into JSON
     json data = json::parse(message);
 
-
+    if (data.contains("params") && data["params"].contains("channel")) {
+        std::string channel = data["params"]["channel"];
+        if (channel.find("book.") != std::string::npos) {
+            // Handle order book updates
+            std::string symbol = channel.substr(5, channel.find(".100ms") - 5);
+            if (market_data_callback_) {
+                market_data_callback_(symbol, data["params"]["data"]);
+            }
+        }
+    }
 }
 
 void WebSocketHandler::sendMessage(const json& message) {
@@ -74,6 +100,10 @@ json WebSocketHandler::readMessage() {
         std::cerr << "Error reading message: " << e.what() << std::endl;
         return json();  // Return an empty JSON object in case of error
     }
+}
+
+void WebSocketHandler::setMarketDataCallback(std::function<void(const std::string&, const json&)> callback) {
+    market_data_callback_ = callback;
 }
 
 void WebSocketHandler::close() {
