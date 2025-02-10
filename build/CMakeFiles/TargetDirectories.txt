@@ -1,3 +1,0 @@
-/home/ubuntu/WebSocket_HFT/build/CMakeFiles/deribit_trader.dir
-/home/ubuntu/WebSocket_HFT/build/CMakeFiles/edit_cache.dir
-/home/ubuntu/WebSocket_HFT/build/CMakeFiles/rebuild_cache.dir
