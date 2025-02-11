@@ -15,7 +15,7 @@ using json = nlohmann::json;
 
 class TradeExecution {
 public:
-   explicit TradeExecution(WebSocketHandler& websocket); // Constructor requiring WebSocketHandler reference
+   explicit TradeExecution(WebSocketHandler& websocket_handler); // Constructor requiring WebSocketHandler reference
    ~TradeExecution(); // Destructor for cleanup
 
     // Order Management Functions
@@ -36,13 +36,13 @@ public:
     void subscribeToMarketData(const std::string& symbol);
 
 private:
-   WebSocketHandler& websocket_;
+   WebSocketHandler& websocket_handler_;
 
     // Map to store subscribers and their callback functions
     std::map<std::string, std::function<void(const json&)>> market_data_subscribers_;
 
     // Atomic counter for generating unique JSON-RPC IDs
-    static std::atomic<int> request_id;
+    static std::atomic<int> request_id_counter;
 
     // Helper function to generate the next request ID
     int getNextRequestId();

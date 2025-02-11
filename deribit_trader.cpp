@@ -10,23 +10,20 @@
 #include <future>
 #include <vector>
 #include <thread>
-#include <immintrin.h> // For SIMD Prepares for potential SIMD optimizations (not yet implemented in this code). 
-                        //SIMD can be used for parallel processing of repetitive tasks like order book analysis.
-                        //CPU Optimization
 
 void executeTrades() {
     try {
         // Initialize WebSocket connection
-        WebSocketHandler websocket("test.deribit.com", "443", "/ws/api/v2");
-        websocket.connect();
+        WebSocketHandler websocket_handler("test.deribit.com", "443", "/ws/api/v2");
+        websocket_handler.connect();
 
         // Initialize trading operations
         // std::unique_ptr has minimal overhead and is generally faster than (optimization)
         // manual memory management with new and delete.
-        auto trade = std::make_unique<TradeExecution>(websocket);
+        auto trade_execution = std::make_unique<TradeExecution>(websocket_handler);
 
         // Authenticate
-        json auth_response = trade->authenticate(CLIENT_ID, CLIENT_SECRET);
+        json auth_response = trade_execution->authenticate(CLIENT_ID, CLIENT_SECRET);
         std::cout << "Auth Response: " << auth_response.dump(4) << std::endl;
 
         // Use unordered_map to cache order responses (optimization)
@@ -48,21 +45,21 @@ void executeTrades() {
             std::cout << "6. Subscribe to Market Data\n";
             std::cout << "7. Exit\n";
             std::cout << "Enter your choice: ";
-            int choice;
-            std::cin >> choice;
+            int user_choice;
+            std::cin >> user_choice;
             
             auto loop_start = LatencyModule::start();  // Start the timer for end-to-end latency
             
-            if (choice == 7) {
+            if (user_choice == 7) {
                 std::cout << "Exiting trading application.\n";
                 break;
             }
 
-            switch (choice) {
+            switch (user_choice) {
             case 1: {  // Place Order
                 std::cout << "Enter instrument name (e.g., BTC-PERPETUAL): ";
                 std::cin >> instrument_name;
-                std::cout << "Enter amount: ";
+                std::cout << "Enter count: ";
                 std::cin >> amount;
                 std::cout << "Enter price: ";
                 std::cin >> price;
@@ -70,10 +67,10 @@ void executeTrades() {
                 try {
                     auto order_future = std::async(std::launch::async, [&]() {
                         auto order_start = LatencyModule::start();
-                        json buy_response = trade->placeBuyOrder(instrument_name, amount, price);
+                        json buy_response = trade_execution->placeBuyOrder(instrument_name, amount, price);
                         LatencyModule::end(order_start, "Order Placement");
                         return buy_response;
-                        });
+                    });
 
                     //Optimization
                     // Wait for the order result asynchronously (non-blocking until we get the result)
@@ -101,7 +98,7 @@ void executeTrades() {
                 try {
                         auto cancel_future = std::async(std::launch::async, [&]() {
                         auto cancel_start = LatencyModule::start();
-                        json cancel_response = trade->cancelOrder(order_id);
+                        json cancel_response = trade_execution->cancelOrder(order_id);
                         LatencyModule::end(cancel_start, "Cancel Order");
                         return cancel_response;
                         }); 
@@ -126,7 +123,7 @@ void executeTrades() {
                 try {
                         auto modify_future = std::async(std::launch::async, [&]() {
                         auto modify_start = LatencyModule::start();
-                        json modify_response = trade->modifyOrder(order_id, price, amount);
+                        json modify_response = trade_execution->modifyOrder(order_id, price, amount);
                         LatencyModule::end(modify_start, "Modify Order");
                         return modify_response;
                         });
@@ -146,7 +143,7 @@ void executeTrades() {
 
                 try {
                     auto order_book_start = LatencyModule::start();
-                    json order_book = trade->getOrderBook(instrument_name);
+                    json order_book = trade_execution->getOrderBook(instrument_name);
                     LatencyModule::end(order_book_start, "Order Book Fetch");
                     std::cout << "Order Book: " << order_book.dump(4) << std::endl;
                 }
@@ -158,7 +155,7 @@ void executeTrades() {
 
             case 5: {  // View Current Positions
                 try {
-                    json positions = trade->getPositions();
+                    json positions = trade_execution->getPositions();
                     std::cout << "Current Positions: " << positions.dump(4) << std::endl;
                 }
                 catch (const std::exception& e) {
@@ -172,12 +169,12 @@ void executeTrades() {
                 std::cin >> instrument_name;
 
                 try {
-                    trade->subscribeToMarketData(instrument_name);
+                    trade_execution->subscribeToMarketData(instrument_name);
                     std::cout << "Subscribed to symbol: " << instrument_name << std::endl;
 
                     // Continuously read and process incoming messages
                     while (true) {
-                        websocket.readMessage();
+                        websocket_handler.readMessage();
                     }
                 }
                 catch (const std::exception& e) {
@@ -194,7 +191,7 @@ void executeTrades() {
         }
 
         // Close connection
-        websocket.close();
+        websocket_handler.close();
 
     }
     catch (const std::exception& e) {

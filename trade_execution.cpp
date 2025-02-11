@@ -6,10 +6,10 @@
 #include "latency_module.h"
 
 
-std::atomic<int> TradeExecution::request_id{ 1 }; // Initialize static atomic counter
+std::atomic<int> TradeExecution::request_id_counter{ 1 }; // Initialize static atomic counter
 
-TradeExecution::TradeExecution(WebSocketHandler& websocket)
-    : websocket_(websocket) {}
+TradeExecution::TradeExecution(WebSocketHandler& websocket_handler)
+    : websocket_handler_(websocket_handler) {}
 
 TradeExecution::~TradeExecution() {
     // Perform cleanup, such as clearing the subscribers
@@ -18,7 +18,7 @@ TradeExecution::~TradeExecution() {
 
 // Helper function to generate the next unique request ID
 int TradeExecution::getNextRequestId() {
-    return request_id++;
+    return request_id_counter++;
 }
 
 // Method to handle incoming market data and notify subscribers
@@ -57,8 +57,8 @@ json TradeExecution::authenticate(const std::string& client_id, const std::strin
                 {"client_secret", client_secret}
             }}
         };
-        websocket_.sendMessage(auth_message);
-        auto response = websocket_.readMessage();
+        websocket_handler_.sendMessage(auth_message);
+        auto response = websocket_handler_.readMessage();
 
         if (!response.contains("result")) {
             throw std::runtime_error("Authentication failed: " + response.dump());
@@ -80,8 +80,8 @@ json TradeExecution::getInstruments(const std::string& currency, const std::stri
             {"method", "public/get_instruments"},
             {"params", {{"currency", currency}, {"kind", kind}, {"expired", expired}}}
         };
-        websocket_.sendMessage(request);
-        return websocket_.readMessage();
+        websocket_handler_.sendMessage(request);
+        return websocket_handler_.readMessage();
     }
     catch (const std::exception& e) {
         std::cerr << "Error in getInstruments: " << e.what() << std::endl;
@@ -103,8 +103,8 @@ json TradeExecution::placeBuyOrder(const std::string& instrument_name, double am
                 {"price", price}
             }}
         };
-        websocket_.sendMessage(buy_request);
-        return websocket_.readMessage();
+        websocket_handler_.sendMessage(buy_request);
+        return websocket_handler_.readMessage();
     }
     catch (const std::exception& e) {
         std::cerr << "Error in placeBuyOrder: " << e.what() << std::endl;
@@ -121,8 +121,8 @@ json TradeExecution::cancelOrder(const std::string& order_id) {
             {"method", "private/cancel"},
             {"params", {{"order_id", order_id}}}
         };
-        websocket_.sendMessage(cancel_request);
-        return websocket_.readMessage();
+        websocket_handler_.sendMessage(cancel_request);
+        return websocket_handler_.readMessage();
     }
     catch (const std::exception& e) {
         std::cerr << "Error in cancelOrder: " << e.what() << std::endl;
@@ -144,8 +144,8 @@ json TradeExecution::modifyOrder(const std::string& order_id, double new_price, 
                 {"contracts", new_amount}  // Add the 'contracts' parameter
             }}
         };
-        websocket_.sendMessage(modify_request);
-        return websocket_.readMessage();
+        websocket_handler_.sendMessage(modify_request);
+        return websocket_handler_.readMessage();
     }
     catch (const std::exception& e) {
         std::cerr << "Error in modifyOrder: " << e.what() << std::endl;
@@ -162,8 +162,8 @@ json TradeExecution::getOrderBook(const std::string& instrument_name) {
             {"method", "public/get_order_book"},
             {"params", {{"instrument_name", instrument_name}}}
         };
-        websocket_.sendMessage(request);
-        return websocket_.readMessage();
+        websocket_handler_.sendMessage(request);
+        return websocket_handler_.readMessage();
     }
     catch (const std::exception& e) {
         std::cerr << "Error in getOrderBook: " << e.what() << std::endl;
@@ -180,8 +180,8 @@ json TradeExecution::getPositions() {
             {"method", "private/get_positions"},
             {"params", {}}
         };
-        websocket_.sendMessage(request);
-        return websocket_.readMessage();
+        websocket_handler_.sendMessage(request);
+        return websocket_handler_.readMessage();
     }
     catch (const std::exception& e) {
         std::cerr << "Error in getPositions: " << e.what() << std::endl;
@@ -195,8 +195,8 @@ void TradeExecution::addMarketDataSubscriber(const std::string& symbol, std::fun
 }
 
 void TradeExecution::subscribeToMarketData(const std::string& symbol) {
-    websocket_.subscribe(symbol);
-    websocket_.setMarketDataCallback([this](const std::string& symbol, const json& data) {
+    websocket_handler_.subscribe(symbol);
+    websocket_handler_.setMarketDataCallback([this](const std::string& symbol, const json& data) {
         std::cout << "Market data update for symbol: " << symbol << std::endl; // Log market data updates
         handleMarketData(data);
     });

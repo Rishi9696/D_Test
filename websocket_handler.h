@@ -23,7 +23,7 @@ using json = nlohmann::json;
 class WebSocketHandler {
 public:
     // Constructor now includes TradeExecution reference
-    WebSocketHandler(const std::string& host, const std::string& port, const std::string& endpoint );
+    WebSocketHandler(const std::string& server_host, const std::string& server_port, const std::string& server_endpoint );
 
     void connect();
     void subscribe(const std::string& symbol); // Declare the subscribe function
@@ -34,12 +34,12 @@ public:
     void close();
 
 private:
-    asio::io_context ioc_;
-    ssl::context ctx_;
-    tcp::resolver resolver_;
-    beast::websocket::stream<ssl::stream<tcp::socket>> websocket_;
-    std::string host_;
-    std::string endpoint_;
+    asio::io_context io_context_;
+    ssl::context ssl_context_;
+    tcp::resolver tcp_resolver_;
+    beast::websocket::stream<ssl::stream<tcp::socket>> websocket_stream_;
+    std::string server_host_;
+    std::string server_endpoint_;
     std::function<void(const std::string&, const json&)> market_data_callback_; // Add market_data_callback_ member
     // TradeExecution& trade_execution_;  // Reference to TradeExecution object
 };

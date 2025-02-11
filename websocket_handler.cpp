@@ -2,29 +2,29 @@
 #include <iostream> // For debugging (optional)
 #include "latency_module.h"  // Include the LatencyModule header
 
-WebSocketHandler::WebSocketHandler(const std::string& host, const std::string& port, const std::string& endpoint )
-    : ctx_(ssl::context::tlsv12_client),
-    resolver_(ioc_),
-    websocket_(ioc_, ctx_),
-    host_(host),
-    endpoint_(endpoint) {
+WebSocketHandler::WebSocketHandler(const std::string& server_host, const std::string& server_port, const std::string& server_endpoint )
+    : ssl_context_(ssl::context::tlsv12_client),
+    tcp_resolver_(io_context_),
+    websocket_stream_(io_context_, ssl_context_),
+    server_host_(server_host),
+    server_endpoint_(server_endpoint) {
     // Load the default SSL certificates
-    ctx_.set_default_verify_paths();
+    ssl_context_.set_default_verify_paths();
 }
 
 void WebSocketHandler::connect() {
     try {
         // Resolve the host and port
-        auto const results = resolver_.resolve(host_, "443");
+        auto const results = tcp_resolver_.resolve(server_host_, "443");
 
         // Connect to the server
-        asio::connect(websocket_.next_layer().next_layer(), results.begin(), results.end());
+        asio::connect(websocket_stream_.next_layer().next_layer(), results.begin(), results.end());
 
         // Perform the SSL handshake
-        websocket_.next_layer().handshake(ssl::stream_base::client);
+        websocket_stream_.next_layer().handshake(ssl::stream_base::client);
 
         // Perform the WebSocket handshake
-        websocket_.handshake(host_, endpoint_);
+        websocket_stream_.handshake(server_host_, server_endpoint_);
 
         std::cout << "WebSocket connected successfully!" << std::endl;
     }
@@ -71,7 +71,7 @@ void WebSocketHandler::sendMessage(const json& message) {
     try {
         // Serialize the JSON message and send it
         std::string message_str = message.dump();
-        websocket_.write(asio::buffer(message_str));
+        websocket_stream_.write(asio::buffer(message_str));
 
         std::cout << "Sent message: " << message_str << std::endl;
     }
@@ -85,7 +85,7 @@ json WebSocketHandler::readMessage() {
         auto read_start = LatencyModule::start();  // Start timer for WebSocket message read
 
         beast::flat_buffer buffer;
-        websocket_.read(buffer);
+        websocket_stream_.read(buffer);
 
         // Parse the received message as JSON
         std::string message_str = beast::buffers_to_string(buffer.data());
@@ -108,7 +108,7 @@ void WebSocketHandler::setMarketDataCallback(std::function<void(const std::strin
 
 void WebSocketHandler::close() {
     try {
-        websocket_.close(beast::websocket::close_code::normal);
+        websocket_stream_.close(beast::websocket::close_code::normal);
         std::cout << "WebSocket connection closed." << std::endl;
     }
     catch (const std::exception& e) {
