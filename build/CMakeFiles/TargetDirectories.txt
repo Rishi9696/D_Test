@@ -1,0 +1,3 @@
+/home/ubuntu/goQuant/build/CMakeFiles/deribit_trader.dir
+/home/ubuntu/goQuant/build/CMakeFiles/edit_cache.dir
+/home/ubuntu/goQuant/build/CMakeFiles/rebuild_cache.dir

@@ -1,8 +1,10 @@
 #include "trade_execution.h"
 #include "websocket_handler.h"
 #include <iostream>
+#include <atomic>
 #include <stdexcept>
 #include "latency_module.h"
+
 
 std::atomic<int> TradeExecution::request_id{ 1 }; // Initialize static atomic counter
 

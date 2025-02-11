@@ -1,11 +1,11 @@
 #ifndef API_CREDENTIALS_H
 #define API_CREDENTIALS_H
 
-#include <cstdlib>  // For std::getenv
+#include <cstdlib> 
 #include <string>
 
-const std::string CLIENT_ID = "eYomcW8L";
-const std::string CLIENT_SECRET = "FfMGgZM8ed7a8MlSyxqBWJXPLTdiffA1JfJ2FdpDflY";
+const std::string CLIENT_ID = "SFPId85T";
+const std::string CLIENT_SECRET = "bQYdHgApZZw5ou3yAFhYefpoA4tmglJjFptSkMVF8K4";
 
-#endif // API_CREDENTIALS_H
+#endif
 
